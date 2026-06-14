@@ -1,0 +1,30 @@
+
+WITH run AS (
+    SELECT
+        age,
+        gender,
+        final,
+        CASE
+            WHEN CAST(final AS TIME) < '03:00:00' THEN 'sub 3:00'
+            WHEN CAST(final AS TIME) <= '03:30:00' THEN '3:00-3:30'
+            WHEN CAST(final AS TIME) <= '04:00:00' THEN '3:30-4:00'
+            WHEN CAST(final AS TIME) <= '04:30:00' THEN '4:00-4:30'
+            WHEN CAST(final AS TIME) <= '05:00:00' THEN '4:30-5:00'
+            WHEN CAST(final AS TIME) <= '05:30:00' THEN '5:00-5:30'
+            WHEN CAST(final AS TIME) <= '06:00:00' THEN '5:30-6:00'
+            ELSE '6:00+'
+        END AS finish_bound
+    FROM marathon
+), 
+runneres_precentage AS (
+    SELECT
+        finish_bound,
+        COUNT(age) AS num_runners
+    FROM run
+    GROUP BY finish_bound
+)
+SELECT
+    finish_bound,
+    num_runners,
+    (num_runners * 100.0 / SUM(num_runners) OVER()) AS precen
+FROM runneres_precentage;
